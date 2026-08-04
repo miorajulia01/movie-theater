@@ -1,9 +1,18 @@
 package com.example.demo.dto.request;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class RegisterRequest {
 	@NotBlank
 	private String firstName;
