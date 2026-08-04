@@ -15,7 +15,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Movie {
+public class JMovie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

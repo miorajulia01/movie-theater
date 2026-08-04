@@ -13,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Room {
+public class JRoom {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -27,5 +27,5 @@ public class Room {
 
     @Builder.Default
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Seat> seats = new ArrayList<>();
+    private List<JSeat> seats = new ArrayList<>();
 }
