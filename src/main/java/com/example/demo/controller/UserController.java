@@ -23,5 +23,4 @@ public class UserController {
         return userService.findById(id);
     }
 
-    // à faire la partie de sping security
 }

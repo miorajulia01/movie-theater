@@ -2,6 +2,8 @@ package com.example.demo.entity;
 
 import com.example.demo.enums.Role;
 import jakarta.persistence.*;
+
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +22,8 @@ public class JReservation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    private Instant createdAt;
 
     @Column(nullable = false)
     private String firstName;
