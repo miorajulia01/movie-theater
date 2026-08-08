@@ -1,27 +1,23 @@
 package com.example.demo;
 
-import com.example.demo.conf.FacadeIT;
-import com.example.demo.entity.JMovie;
-import com.example.demo.entity.JProjection;
-import com.example.demo.entity.JRoom;
-import com.example.demo.entity.JSeat;
+import com.example.demo.entity.*;
 import com.example.demo.enums.Genre;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -36,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Testcontainers
-class ApplicationIntegrationTest extends FacadeIT {
+class ApplicationIntegrationTest {
 
     @Container
     static PostgreSQLContainer<?> postgres =
@@ -73,12 +69,9 @@ class ApplicationIntegrationTest extends FacadeIT {
     @Test
     void shouldTestAllEndpoints() throws Exception {
 
-        // =========================================================
-        // 1. MOVIE
-        // =========================================================
-
+        // Movie
         JMovie movie = JMovie.builder()
-                .title("Inception")
+                .title("Inception - " + UUID.randomUUID())
                 .description("Sci-fi thriller")
                 .duration(Duration.ofMinutes(148))
                 .genre(Set.of(Genre.ACTION))
@@ -105,12 +98,9 @@ class ApplicationIntegrationTest extends FacadeIT {
                 .andExpect(status().is2xxSuccessful());
 
 
-        // =========================================================
-        // 2. ROOM
-        // =========================================================
-
+        // Room
         JRoom room = JRoom.builder()
-                .number("Room A")
+                .number("Room - " + UUID.randomUUID())
                 .capacity(100)
                 .build();
 
@@ -135,36 +125,16 @@ class ApplicationIntegrationTest extends FacadeIT {
                 .andExpect(status().is2xxSuccessful());
 
 
-        // =========================================================
-        // 3. SEAT
-        // =========================================================
-
-        /*
-         * IMPORTANT :
-         * JSeat.room possède @JsonIgnore.
-         *
-         * On ne peut donc pas utiliser :
-         *
-         * objectMapper.writeValueAsString(seat)
-         *
-         * car "room" serait supprimé du JSON.
-         *
-         * On envoie donc explicitement l'ID de la Room.
-         */
-
-        String seatJson = """
-                {
-                    "number": "A1",
-                    "room": {
-                        "id": "%s"
-                    }
-                }
-                """.formatted(generatedRoomId);
+        // Seat
+        JSeat seat = JSeat.builder()
+                .number("Seat - " + UUID.randomUUID())
+                .room(createdRoom)
+                .build();
 
         String seatResponseJson = mockMvc.perform(
                         post("/seats")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(seatJson)
+                                .content(objectMapper.writeValueAsString(seat))
                 )
                 .andExpect(status().is2xxSuccessful())
                 .andReturn()
@@ -182,38 +152,18 @@ class ApplicationIntegrationTest extends FacadeIT {
                 .andExpect(status().is2xxSuccessful());
 
 
-        // =========================================================
-        // 4. PROJECTION
-        // =========================================================
-
-        /*
-         * Même principe :
-         * on possède déjà les IDs du Movie et de la Room.
-         *
-         * On évite d'envoyer les objets complets.
-         */
-
-        String projectionJson = """
-                {
-                    "datetime": "%s",
-                    "seatPrice": 10.50,
-                    "movie": {
-                        "id": "%s"
-                    },
-                    "room": {
-                        "id": "%s"
-                    }
-                }
-                """.formatted(
-                Instant.now(),
-                generatedMovieId,
-                generatedRoomId
-        );
+        // Projection
+        JProjection projection = JProjection.builder()
+                .datetime(Instant.now())
+                .seatPrice(new BigDecimal("10.50"))
+                .room(createdRoom)
+                .movie(createdMovie)
+                .build();
 
         String projectionResponseJson = mockMvc.perform(
                         post("/projections")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(projectionJson)
+                                .content(objectMapper.writeValueAsString(projection))
                 )
                 .andExpect(status().is2xxSuccessful())
                 .andReturn()
