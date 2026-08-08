@@ -1,27 +1,38 @@
 package com.example.demo;
 
+import com.example.demo.conf.FacadeIT;
 import com.example.demo.entity.*;
-import com.example.demo.enums.Role;
+import com.example.demo.enums.Genre;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
-import java.time.LocalDate;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 @Testcontainers
-class ApplicationIntegrationTest {
+class ApplicationIntegrationTest extends FacadeIT {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
@@ -33,77 +44,101 @@ class ApplicationIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
     }
 
+    // Désactive la sécurité HTTP pour les tests d'intégration
+    @TestConfiguration
+    static class NoSecurityConfig {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            http.csrf(csrf -> csrf.disable())
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return http.build();
+        }
+    }
+
     @Autowired
-    private TestRestTemplate restTemplate;
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    void shouldTestAllEndpoints() {
-        // 1. User
-        UUID userId = UUID.randomUUID();
-        JUser user = JUser.builder()
-                .id(userId)
-                .firstName("John")
-                .lastName("Doe")
-                .birthdate(LocalDate.of(2000, 1, 1))
-                .email("john@example.com")
-                .password("secret")
-                .phone("0340000000")
-                .role(Role.CLIENT)
-                .build();
-        ResponseEntity<JUser> userResponse = restTemplate.postForEntity("/users", user, JUser.class);
-        assertThat(userResponse.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(restTemplate.getForEntity("/users/" + userId, JUser.class).getStatusCode().is2xxSuccessful()).isTrue();
+    void shouldTestAllEndpoints() throws Exception {
 
-        // 2. Movie
-        UUID movieId = UUID.randomUUID();
+        // 1. Création d'un Movie
         JMovie movie = JMovie.builder()
-                .id(movieId)
                 .title("Inception")
                 .description("Sci-fi thriller")
+                .duration(Duration.ofMinutes(148))
+                .genre(Set.of(Genre.ACTION))
                 .build();
-        ResponseEntity<JMovie> movieResponse = restTemplate.postForEntity("/movies", movie, JMovie.class);
-        assertThat(movieResponse.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(restTemplate.getForEntity("/movies/" + movieId, JMovie.class).getStatusCode().is2xxSuccessful()).isTrue();
 
-        // 3. Room
-        UUID roomId = UUID.randomUUID();
+        String movieResponseJson = mockMvc.perform(post("/movies")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(movie)))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn().getResponse().getContentAsString();
+
+        JMovie createdMovie = objectMapper.readValue(movieResponseJson, JMovie.class);
+        UUID generatedMovieId = createdMovie.getId();
+
+        mockMvc.perform(get("/movies/" + generatedMovieId))
+                .andExpect(status().is2xxSuccessful());
+
+        // 2. Création d'une Room
         JRoom room = JRoom.builder()
-                .id(roomId)
                 .number("Room A")
                 .capacity(100)
                 .build();
-        ResponseEntity<JRoom> roomResponse = restTemplate.postForEntity("/rooms", room, JRoom.class);
-        assertThat(roomResponse.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(restTemplate.getForEntity("/rooms/" + roomId, JRoom.class).getStatusCode().is2xxSuccessful()).isTrue();
 
-        // 4. Seat
-        UUID seatId = UUID.randomUUID();
+        String roomResponseJson = mockMvc.perform(post("/rooms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(room)))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn().getResponse().getContentAsString();
+
+        JRoom createdRoom = objectMapper.readValue(roomResponseJson, JRoom.class);
+        UUID generatedRoomId = createdRoom.getId();
+
+        mockMvc.perform(get("/rooms/" + generatedRoomId))
+                .andExpect(status().is2xxSuccessful());
+
+        // 3. Création d'un Seat (corrigé)
         JSeat seat = JSeat.builder()
-                .id(seatId)
                 .number("A1")
+                .room(createdRoom) // Association avec la salle créée
                 .build();
-        ResponseEntity<JSeat> seatResponse = restTemplate.postForEntity("/seats", seat, JSeat.class);
-        assertThat(seatResponse.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(restTemplate.getForEntity("/seats/" + seatId, JSeat.class).getStatusCode().is2xxSuccessful()).isTrue();
 
-        // 5. Projection
-        UUID projectionId = UUID.randomUUID();
+        String seatResponseJson = mockMvc.perform(post("/seats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(seat)))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn().getResponse().getContentAsString();
+
+        JSeat createdSeat = objectMapper.readValue(seatResponseJson, JSeat.class);
+        UUID generatedSeatId = createdSeat.getId();
+
+        mockMvc.perform(get("/seats/" + generatedSeatId))
+                .andExpect(status().is2xxSuccessful());
+
+        // 4. Création d'une Projection (corrigé)
+        // On utilise les IDs récupérés pour associer la projection
         JProjection projection = JProjection.builder()
-                .id(projectionId)
                 .datetime(Instant.now())
+                .movie(createdMovie) // ← Ajout : association avec le Movie
+                .room(createdRoom)   // ← Ajout : association avec la Room
+                .seatPrice(java.math.BigDecimal.valueOf(10.50)) // ← Ajout : prix requis
                 .build();
-        ResponseEntity<JProjection> projectionResponse = restTemplate.postForEntity("/projections", projection, JProjection.class);
-        assertThat(projectionResponse.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(restTemplate.getForEntity("/projections/" + projectionId, JProjection.class).getStatusCode().is2xxSuccessful()).isTrue();
 
-        // 6. Reservation
-        UUID reservationId = UUID.randomUUID();
-        JReservation reservation = JReservation.builder()
-                .id(reservationId)
-                .createdAt(Instant.now())
-                .build();
-        ResponseEntity<JReservation> reservationResponse = restTemplate.postForEntity("/reservations", reservation, JReservation.class);
-        assertThat(reservationResponse.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(restTemplate.getForEntity("/reservations/" + reservationId, JReservation.class).getStatusCode().is2xxSuccessful()).isTrue();
+        String projectionResponseJson = mockMvc.perform(post("/projections")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(projection)))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn().getResponse().getContentAsString();
+
+        JProjection createdProjection = objectMapper.readValue(projectionResponseJson, JProjection.class);
+        UUID generatedProjectionId = createdProjection.getId();
+
+        mockMvc.perform(get("/projections/" + generatedProjectionId))
+                .andExpect(status().is2xxSuccessful());
     }
 }

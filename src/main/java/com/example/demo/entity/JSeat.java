@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.UUID;
 import lombok.*;
@@ -22,5 +23,6 @@ public class JSeat {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "room_id", nullable = false)
+    @JsonIgnore
     private JRoom room;
 }
