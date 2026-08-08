@@ -23,6 +23,5 @@ public class JSeat {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "room_id", nullable = false)
-    @JsonIgnore
     private JRoom room;
 }
