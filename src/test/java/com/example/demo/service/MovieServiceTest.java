@@ -1,10 +1,13 @@
 package com.example.demo.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.demo.dto.request.MovieRequest;
+import com.example.demo.dto.response.MovieResponse;
 import com.example.demo.entity.JMovie;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.mapper.MovieMapper;
 import com.example.demo.repository.JMovieRepository;
 import java.util.List;
 import java.util.Optional;
@@ -15,20 +18,25 @@ import org.junit.jupiter.api.Test;
 class MovieServiceTest {
 
   private JMovieRepository movieRepository;
+  private MovieMapper movieMapper;
   private MovieService movieService;
 
   @BeforeEach
   void setUp() {
     movieRepository = mock(JMovieRepository.class);
-    movieService = new MovieService(movieRepository);
+    movieMapper = mock(MovieMapper.class);
+    movieService = new MovieService(movieRepository, movieMapper);
   }
 
   @Test
   void testFindAll() {
     JMovie movie = new JMovie();
-    when(movieRepository.findAll()).thenReturn(List.of(movie));
+    MovieResponse response = new MovieResponse();
 
-    List<JMovie> movies = movieService.findAll();
+    when(movieRepository.findAll()).thenReturn(List.of(movie));
+    when(movieMapper.toResponse(movie)).thenReturn(response);
+
+    List<MovieResponse> movies = movieService.findAll();
     assertEquals(1, movies.size());
     verify(movieRepository, times(1)).findAll();
   }
@@ -37,12 +45,14 @@ class MovieServiceTest {
   void testFindByIdFound() {
     UUID id = UUID.randomUUID();
     JMovie movie = new JMovie();
-    movie.setId(id);
-    when(movieRepository.findById(id)).thenReturn(Optional.of(movie));
+    MovieResponse response = new MovieResponse();
 
-    JMovie found = movieService.findById(id);
+    when(movieRepository.findById(id)).thenReturn(Optional.of(movie));
+    when(movieMapper.toResponse(movie)).thenReturn(response);
+
+    MovieResponse found = movieService.findById(id);
     assertNotNull(found);
-    assertEquals(id, found.getId());
+    verify(movieRepository, times(1)).findById(id);
   }
 
   @Test
@@ -50,15 +60,21 @@ class MovieServiceTest {
     UUID id = UUID.randomUUID();
     when(movieRepository.findById(id)).thenReturn(Optional.empty());
 
-    assertThrows(RuntimeException.class, () -> movieService.findById(id));
+    assertThrows(ResourceNotFoundException.class, () -> movieService.findById(id));
   }
 
   @Test
   void testSave() {
+    MovieRequest request = new MovieRequest();
     JMovie movie = new JMovie();
-    when(movieRepository.save(any(JMovie.class))).thenReturn(movie);
+    JMovie savedMovie = new JMovie();
+    MovieResponse response = new MovieResponse();
 
-    JMovie saved = movieService.save(movie);
+    when(movieMapper.toEntity(request)).thenReturn(movie);
+    when(movieRepository.save(movie)).thenReturn(savedMovie);
+    when(movieMapper.toResponse(savedMovie)).thenReturn(response);
+
+    MovieResponse saved = movieService.save(request);
     assertNotNull(saved);
     verify(movieRepository, times(1)).save(movie);
   }

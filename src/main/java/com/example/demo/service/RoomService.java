@@ -1,26 +1,40 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.request.RoomRequest;
+import com.example.demo.dto.response.RoomResponse;
 import com.example.demo.entity.JRoom;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.mapper.RoomMapper;
 import com.example.demo.repository.JRoomRepository;
 import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RoomService {
   private final JRoomRepository roomRepository;
+  private final RoomMapper roomMapper;
 
-  public List<JRoom> findAll() {
-    return roomRepository.findAll();
+  public List<RoomResponse> findAll() {
+    return roomRepository.findAll().stream()
+        .map(roomMapper::toResponse)
+        .collect(Collectors.toList());
   }
 
-  public JRoom findById(UUID id) {
-    return roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
+  public RoomResponse findById(UUID id) {
+    JRoom room =
+        roomRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + id));
+    return roomMapper.toResponse(room);
   }
 
-  public JRoom save(JRoom room) {
-    return roomRepository.save(room);
+  public RoomResponse save(RoomRequest request) {
+    JRoom room = roomMapper.toEntity(request);
+    JRoom saved = roomRepository.save(room);
+    return roomMapper.toResponse(saved);
   }
 }

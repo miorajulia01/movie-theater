@@ -1,30 +1,32 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.JProjection;
+import com.example.demo.dto.request.ProjectionRequest;
+import com.example.demo.dto.response.ProjectionResponse;
 import com.example.demo.service.ProjectionService;
 import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/projections")
-@AllArgsConstructor
+@RequestMapping("/api/projections")
+@RequiredArgsConstructor
 public class ProjectionController {
   private final ProjectionService projectionService;
 
   @GetMapping
-  public List<JProjection> getAllProjections() {
-    return projectionService.findAll();
+  public ResponseEntity<List<ProjectionResponse>> findAll() {
+    return ResponseEntity.ok(projectionService.findAll());
   }
 
   @GetMapping("/{id}")
-  public JProjection getProjectionById(@PathVariable UUID id) {
-    return projectionService.findById(id);
+  public ResponseEntity<ProjectionResponse> getById(@PathVariable UUID id) {
+    return ResponseEntity.ok(projectionService.findById(id));
   }
 
   @PostMapping
-  public JProjection createProjection(@RequestBody JProjection projection) {
-    return projectionService.save(projection);
+  public ResponseEntity<ProjectionResponse> create(@RequestBody ProjectionRequest request) {
+    return ResponseEntity.ok(projectionService.save(request));
   }
 }

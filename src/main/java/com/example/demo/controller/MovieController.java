@@ -1,30 +1,32 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.JMovie;
+import com.example.demo.dto.request.MovieRequest;
+import com.example.demo.dto.response.MovieResponse;
 import com.example.demo.service.MovieService;
 import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/movies")
-@AllArgsConstructor
+@RequestMapping("/api/movies")
+@RequiredArgsConstructor
 public class MovieController {
   private final MovieService movieService;
 
   @GetMapping
-  public List<JMovie> getAllMovies() {
-    return movieService.findAll();
+  public ResponseEntity<List<MovieResponse>> findAll() {
+    return ResponseEntity.ok(movieService.findAll());
   }
 
   @GetMapping("/{id}")
-  public JMovie getMovieById(@PathVariable UUID id) {
-    return movieService.findById(id);
+  public ResponseEntity<MovieResponse> getById(@PathVariable UUID id) {
+    return ResponseEntity.ok(movieService.findById(id));
   }
 
   @PostMapping
-  public JMovie createMovie(@RequestBody JMovie movie) {
-    return movieService.save(movie);
+  public ResponseEntity<MovieResponse> create(@RequestBody MovieRequest request) {
+    return ResponseEntity.ok(movieService.save(request));
   }
 }
