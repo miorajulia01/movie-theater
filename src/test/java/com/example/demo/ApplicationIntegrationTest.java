@@ -4,7 +4,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.demo.entity.*;
+import com.example.demo.dto.request.MovieRequest;
+import com.example.demo.dto.request.ProjectionRequest;
+import com.example.demo.dto.request.RoomRequest;
+import com.example.demo.dto.request.SeatRequest;
+import com.example.demo.dto.response.MovieResponse;
+import com.example.demo.dto.response.ProjectionResponse;
+import com.example.demo.dto.response.RoomResponse;
+import com.example.demo.dto.response.SeatResponse;
 import com.example.demo.enums.Genre;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
@@ -48,7 +55,6 @@ class ApplicationIntegrationTest {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
       http.csrf(csrf -> csrf.disable())
           .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
@@ -63,107 +69,99 @@ class ApplicationIntegrationTest {
   @Test
   void shouldTestAllEndpoints() throws Exception {
 
-    // Movie
-    JMovie movie =
-        JMovie.builder()
-            .title("Inception - " + UUID.randomUUID())
-            .description("Sci-fi thriller")
-            .duration(Duration.ofMinutes(148))
-            .genre(Set.of(Genre.ACTION))
-            .build();
+    // 1. Movie
+    MovieRequest movieRequest = new MovieRequest();
+    movieRequest.setTitle("Inception - " + UUID.randomUUID());
+    movieRequest.setDescription("Sci-fi thriller");
+    movieRequest.setDuration(Duration.ofMinutes(148));
+    movieRequest.setGenre(Set.of(Genre.ACTION));
 
     String movieResponseJson =
         mockMvc
             .perform(
-                post("/movies")
+                post("/api/movies")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(movie)))
+                    .content(objectMapper.writeValueAsString(movieRequest)))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
             .getContentAsString();
 
-    JMovie createdMovie = objectMapper.readValue(movieResponseJson, JMovie.class);
-
+    MovieResponse createdMovie = objectMapper.readValue(movieResponseJson, MovieResponse.class);
     UUID generatedMovieId = createdMovie.getId();
 
-    mockMvc.perform(get("/movies/" + generatedMovieId)).andExpect(status().is2xxSuccessful());
+    mockMvc.perform(get("/api/movies/" + generatedMovieId)).andExpect(status().is2xxSuccessful());
+    mockMvc.perform(get("/api/movies")).andExpect(status().is2xxSuccessful());
 
-    mockMvc.perform(get("/movies")).andExpect(status().is2xxSuccessful());
-
-    // Room
-    JRoom room = JRoom.builder().number("Room - " + UUID.randomUUID()).capacity(100).build();
+    // 2. Room
+    RoomRequest roomRequest = new RoomRequest();
+    roomRequest.setNumber("Room - " + UUID.randomUUID());
+    roomRequest.setCapacity(100);
 
     String roomResponseJson =
         mockMvc
             .perform(
-                post("/rooms")
+                post("/api/rooms")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(room)))
+                    .content(objectMapper.writeValueAsString(roomRequest)))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
             .getContentAsString();
 
-    JRoom createdRoom = objectMapper.readValue(roomResponseJson, JRoom.class);
-
+    RoomResponse createdRoom = objectMapper.readValue(roomResponseJson, RoomResponse.class);
     UUID generatedRoomId = createdRoom.getId();
 
-    mockMvc.perform(get("/rooms/" + generatedRoomId)).andExpect(status().is2xxSuccessful());
+    mockMvc.perform(get("/api/rooms/" + generatedRoomId)).andExpect(status().is2xxSuccessful());
+    mockMvc.perform(get("/api/rooms")).andExpect(status().is2xxSuccessful());
 
-    mockMvc.perform(get("/rooms")).andExpect(status().is2xxSuccessful());
-
-    // Seat
-    JSeat seat = JSeat.builder().number("Seat - " + UUID.randomUUID()).room(createdRoom).build();
+    // 3. Seat
+    SeatRequest seatRequest = new SeatRequest();
+    seatRequest.setNumber("Seat - " + UUID.randomUUID());
+    seatRequest.setRoomId(generatedRoomId);
 
     String seatResponseJson =
         mockMvc
             .perform(
-                post("/seats")
+                post("/api/seats")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(seat)))
+                    .content(objectMapper.writeValueAsString(seatRequest)))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
             .getContentAsString();
 
-    JSeat createdSeat = objectMapper.readValue(seatResponseJson, JSeat.class);
-
+    SeatResponse createdSeat = objectMapper.readValue(seatResponseJson, SeatResponse.class);
     UUID generatedSeatId = createdSeat.getId();
 
-    mockMvc.perform(get("/seats/" + generatedSeatId)).andExpect(status().is2xxSuccessful());
+    mockMvc.perform(get("/api/seats/" + generatedSeatId)).andExpect(status().is2xxSuccessful());
+    mockMvc.perform(get("/api/seats")).andExpect(status().is2xxSuccessful());
 
-    mockMvc.perform(get("/seats")).andExpect(status().is2xxSuccessful());
-
-    // Projection
-    JProjection projection =
-        JProjection.builder()
-            .datetime(Instant.now())
-            .seatPrice(new BigDecimal("10.50"))
-            .room(createdRoom)
-            .movie(createdMovie)
-            .build();
+    // 4. Projection
+    ProjectionRequest projectionRequest = new ProjectionRequest();
+    projectionRequest.setDatetime(Instant.now());
+    projectionRequest.setSeatPrice(new BigDecimal("10.50"));
+    projectionRequest.setRoomId(generatedRoomId);
+    projectionRequest.setMovieId(generatedMovieId);
 
     String projectionResponseJson =
         mockMvc
             .perform(
-                post("/projections")
+                post("/api/projections")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(projection)))
+                    .content(objectMapper.writeValueAsString(projectionRequest)))
             .andExpect(status().is2xxSuccessful())
             .andReturn()
             .getResponse()
             .getContentAsString();
 
-    JProjection createdProjection =
-        objectMapper.readValue(projectionResponseJson, JProjection.class);
-
+    ProjectionResponse createdProjection =
+        objectMapper.readValue(projectionResponseJson, ProjectionResponse.class);
     UUID generatedProjectionId = createdProjection.getId();
 
     mockMvc
-        .perform(get("/projections/" + generatedProjectionId))
+        .perform(get("/api/projections/" + generatedProjectionId))
         .andExpect(status().is2xxSuccessful());
-
-    mockMvc.perform(get("/projections")).andExpect(status().is2xxSuccessful());
+    mockMvc.perform(get("/api/projections")).andExpect(status().is2xxSuccessful());
   }
 }
