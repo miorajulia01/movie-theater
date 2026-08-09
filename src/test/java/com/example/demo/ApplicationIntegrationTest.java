@@ -97,6 +97,9 @@ class ApplicationIntegrationTest {
                 )
                 .andExpect(status().is2xxSuccessful());
 
+        mockMvc.perform(get("/movies"))
+                .andExpect(status().is2xxSuccessful());
+
 
         // Room
         JRoom room = JRoom.builder()
@@ -124,6 +127,9 @@ class ApplicationIntegrationTest {
                 )
                 .andExpect(status().is2xxSuccessful());
 
+        mockMvc.perform(get("/rooms"))
+                .andExpect(status().is2xxSuccessful());
+
 
         // Seat
         JSeat seat = JSeat.builder()
@@ -149,6 +155,9 @@ class ApplicationIntegrationTest {
         mockMvc.perform(
                         get("/seats/" + generatedSeatId)
                 )
+                .andExpect(status().is2xxSuccessful());
+
+        mockMvc.perform(get("/seats"))
                 .andExpect(status().is2xxSuccessful());
 
 
@@ -182,6 +191,9 @@ class ApplicationIntegrationTest {
         mockMvc.perform(
                         get("/projections/" + generatedProjectionId)
                 )
+                .andExpect(status().is2xxSuccessful());
+
+        mockMvc.perform(get("/projections"))
                 .andExpect(status().is2xxSuccessful());
     }
 }
