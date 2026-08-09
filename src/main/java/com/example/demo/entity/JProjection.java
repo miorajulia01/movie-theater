@@ -17,21 +17,21 @@ import lombok.*;
 @Builder
 public class JProjection {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @Column(nullable = false)
-    private Instant datetime;
+  @Column(nullable = false)
+  private Instant datetime;
 
-    @Column(nullable = false)
-    private BigDecimal seatPrice;
+  @Column(nullable = false)
+  private BigDecimal seatPrice;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "movie_id", nullable = false)
-    private JMovie movie;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "movie_id", nullable = false)
+  private JMovie movie;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "room_id", nullable = false)
-    private JRoom room;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "room_id", nullable = false)
+  private JRoom room;
 }

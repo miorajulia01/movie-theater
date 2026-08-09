@@ -1,11 +1,9 @@
 package com.example.demo.repository;
 
 import com.example.demo.entity.JMovie;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
-
 @Repository
-public interface JMovieRepository extends JpaRepository<JMovie, UUID> {
-}
+public interface JMovieRepository extends JpaRepository<JMovie, UUID> {}

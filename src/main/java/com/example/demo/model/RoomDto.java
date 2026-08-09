@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomDto {
-    private String id;
-    private String name;
-    private int capacity;
+  private String id;
+  private String name;
+  private int capacity;
 }

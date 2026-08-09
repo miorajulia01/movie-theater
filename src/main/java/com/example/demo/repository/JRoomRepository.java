@@ -1,10 +1,9 @@
 package com.example.demo.repository;
 
 import com.example.demo.entity.JRoom;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.UUID;
 
 @Repository
-public interface JRoomRepository extends JpaRepository<JRoom, UUID> {
-}
+public interface JRoomRepository extends JpaRepository<JRoom, UUID> {}

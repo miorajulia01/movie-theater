@@ -18,18 +18,18 @@ import lombok.*;
 @Builder
 public class JRoom {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String number;
+  @Column(nullable = false, unique = true)
+  private String number;
 
-    @Column(nullable = false)
-    private int capacity;
+  @Column(nullable = false)
+  private int capacity;
 
-    @Builder.Default
-    @JsonIgnore
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JSeat> seats = new ArrayList<>();
+  @Builder.Default
+  @JsonIgnore
+  @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<JSeat> seats = new ArrayList<>();
 }

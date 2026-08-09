@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MovieDto {
-    private String id;
-    private String title;
-    private int durationMinutes;
-    private String description;
+  private String id;
+  private String title;
+  private int durationMinutes;
+  private String description;
 }
