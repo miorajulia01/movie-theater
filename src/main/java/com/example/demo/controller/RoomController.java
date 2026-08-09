@@ -1,30 +1,32 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.JRoom;
+import com.example.demo.dto.request.RoomRequest;
+import com.example.demo.dto.response.RoomResponse;
 import com.example.demo.service.RoomService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/rooms")
-@AllArgsConstructor
+@RequestMapping("/api/rooms")
+@RequiredArgsConstructor
 public class RoomController {
   private final RoomService roomService;
 
   @GetMapping
-  public List<JRoom> getAllRooms() {
-    return roomService.findAll();
+  public ResponseEntity<List<RoomResponse>> findAll() {
+    return ResponseEntity.ok(roomService.findAll());
   }
 
   @GetMapping("/{id}")
-  public JRoom getRoomById(@PathVariable UUID id) {
-    return roomService.findById(id);
+  public ResponseEntity<RoomResponse> getById(@PathVariable UUID id) {
+    return ResponseEntity.ok(roomService.findById(id));
   }
 
   @PostMapping
-  public JRoom createRoom(@RequestBody JRoom room) {
-    return roomService.save(room);
+  public ResponseEntity<RoomResponse> create(@RequestBody RoomRequest request) {
+    return ResponseEntity.ok(roomService.save(request));
   }
 }

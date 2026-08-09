@@ -21,6 +21,12 @@ public class SeatService {
   private final JRoomRepository roomRepository;
   private final SeatMapper seatMapper;
 
+  public List<SeatResponse> findAll() {
+    return seatRepository.findAll().stream()
+            .map(seatMapper::toResponse)
+            .collect(Collectors.toList());
+  }
+
   public SeatResponse findById(UUID id) {
     JSeat seat = seatRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Seat not found: " + id));
@@ -30,6 +36,8 @@ public class SeatService {
   public SeatResponse save(SeatRequest request) {
     JRoom room = roomRepository.findById(request.getRoomId())
             .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
-    return seatMapper.toResponse(seatRepository.save(seatMapper.toEntity(request, room)));
+    JSeat seat = seatMapper.toEntity(request, room);
+    JSeat saved = seatRepository.save(seat);
+    return seatMapper.toResponse(saved);
   }
 }

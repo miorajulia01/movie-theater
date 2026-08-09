@@ -37,22 +37,4 @@ public class MovieService {
     JMovie savedMovie = movieRepository.save(movie);
     return movieMapper.toResponse(savedMovie);
   }
-
-  public MovieResponse update(UUID id, MovieRequest request) {
-    JMovie movie = movieRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Movie not found with id: " + id));
-    movie.setTitle(request.getTitle());
-    movie.setGenre(request.getGenre());
-    movie.setDescription(request.getDescription());
-    movie.setDuration(request.getDuration());
-    JMovie updatedMovie = movieRepository.save(movie);
-    return movieMapper.toResponse(updatedMovie);
-  }
-
-  public void delete(UUID id) {
-    if (!movieRepository.existsById(id)) {
-      throw new ResourceNotFoundException("Movie not found with id: " + id);
-    }
-    movieRepository.deleteById(id);
-  }
 }

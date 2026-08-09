@@ -18,17 +18,21 @@ public class RoomService {
   private final JRoomRepository roomRepository;
   private final RoomMapper roomMapper;
 
+  public List<RoomResponse> findAll() {
+    return roomRepository.findAll().stream()
+            .map(roomMapper::toResponse)
+            .collect(Collectors.toList());
+  }
+
   public RoomResponse findById(UUID id) {
     JRoom room = roomRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + id));
     return roomMapper.toResponse(room);
   }
 
-  public List<RoomResponse> findAll() {
-    return roomRepository.findAll().stream().map(roomMapper::toResponse).collect(Collectors.toList());
-  }
-
   public RoomResponse save(RoomRequest request) {
-    return roomMapper.toResponse(roomRepository.save(roomMapper.toEntity(request)));
+    JRoom room = roomMapper.toEntity(request);
+    JRoom saved = roomRepository.save(room);
+    return roomMapper.toResponse(saved);
   }
 }
