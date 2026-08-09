@@ -1,26 +1,58 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.request.MovieRequest;
+import com.example.demo.dto.response.MovieResponse;
 import com.example.demo.entity.JMovie;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.mapper.MovieMapper;
 import com.example.demo.repository.JMovieRepository;
-import java.util.List;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MovieService {
+
   private final JMovieRepository movieRepository;
+  private final MovieMapper movieMapper;
 
-  public List<JMovie> findAll() {
-    return movieRepository.findAll();
+  public MovieResponse findById(UUID id) {
+    JMovie movie = movieRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Movie not found with id: " + id));
+    return movieMapper.toResponse(movie);
   }
 
-  public JMovie findById(UUID id) {
-    return movieRepository.findById(id).orElseThrow(() -> new RuntimeException("Movie not found"));
+  public List<MovieResponse> findAll() {
+    return movieRepository.findAll().stream()
+            .map(movieMapper::toResponse)
+            .collect(Collectors.toList());
   }
 
-  public JMovie save(JMovie movie) {
-    return movieRepository.save(movie);
+  public MovieResponse save(MovieRequest request) {
+    JMovie movie = movieMapper.toEntity(request);
+    JMovie savedMovie = movieRepository.save(movie);
+    return movieMapper.toResponse(savedMovie);
+  }
+
+  public MovieResponse update(UUID id, MovieRequest request) {
+    JMovie movie = movieRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Movie not found with id: " + id));
+    movie.setTitle(request.getTitle());
+    movie.setGenre(request.getGenre());
+    movie.setDescription(request.getDescription());
+    movie.setDuration(request.getDuration());
+    JMovie updatedMovie = movieRepository.save(movie);
+    return movieMapper.toResponse(updatedMovie);
+  }
+
+  public void delete(UUID id) {
+    if (!movieRepository.existsById(id)) {
+      throw new ResourceNotFoundException("Movie not found with id: " + id);
+    }
+    movieRepository.deleteById(id);
   }
 }
