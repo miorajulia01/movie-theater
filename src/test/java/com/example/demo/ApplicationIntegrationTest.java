@@ -56,7 +56,7 @@ class ApplicationIntegrationTest {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
       http.csrf(csrf -> csrf.disable())
-              .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+          .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
       return http.build();
     }
@@ -77,15 +77,15 @@ class ApplicationIntegrationTest {
     movieRequest.setGenre(Set.of(Genre.ACTION));
 
     String movieResponseJson =
-            mockMvc
-                    .perform(
-                            post("/api/movies")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(movieRequest)))
-                    .andExpect(status().is2xxSuccessful())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mockMvc
+            .perform(
+                post("/api/movies")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(movieRequest)))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     MovieResponse createdMovie = objectMapper.readValue(movieResponseJson, MovieResponse.class);
     UUID generatedMovieId = createdMovie.getId();
@@ -99,15 +99,15 @@ class ApplicationIntegrationTest {
     roomRequest.setCapacity(100);
 
     String roomResponseJson =
-            mockMvc
-                    .perform(
-                            post("/api/rooms")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(roomRequest)))
-                    .andExpect(status().is2xxSuccessful())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mockMvc
+            .perform(
+                post("/api/rooms")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(roomRequest)))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     RoomResponse createdRoom = objectMapper.readValue(roomResponseJson, RoomResponse.class);
     UUID generatedRoomId = createdRoom.getId();
@@ -121,15 +121,15 @@ class ApplicationIntegrationTest {
     seatRequest.setRoomId(generatedRoomId);
 
     String seatResponseJson =
-            mockMvc
-                    .perform(
-                            post("/api/seats")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(seatRequest)))
-                    .andExpect(status().is2xxSuccessful())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mockMvc
+            .perform(
+                post("/api/seats")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(seatRequest)))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     SeatResponse createdSeat = objectMapper.readValue(seatResponseJson, SeatResponse.class);
     UUID generatedSeatId = createdSeat.getId();
@@ -145,23 +145,23 @@ class ApplicationIntegrationTest {
     projectionRequest.setMovieId(generatedMovieId);
 
     String projectionResponseJson =
-            mockMvc
-                    .perform(
-                            post("/api/projections")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(projectionRequest)))
-                    .andExpect(status().is2xxSuccessful())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+        mockMvc
+            .perform(
+                post("/api/projections")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(projectionRequest)))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     ProjectionResponse createdProjection =
-            objectMapper.readValue(projectionResponseJson, ProjectionResponse.class);
+        objectMapper.readValue(projectionResponseJson, ProjectionResponse.class);
     UUID generatedProjectionId = createdProjection.getId();
 
     mockMvc
-            .perform(get("/api/projections/" + generatedProjectionId))
-            .andExpect(status().is2xxSuccessful());
+        .perform(get("/api/projections/" + generatedProjectionId))
+        .andExpect(status().is2xxSuccessful());
     mockMvc.perform(get("/api/projections")).andExpect(status().is2xxSuccessful());
   }
 }

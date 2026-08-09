@@ -8,10 +8,14 @@ import java.time.Duration;
 import java.util.Set;
 import lombok.*;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MovieRequest {
-    @NotBlank private String title;
-    @NotNull private Set<Genre> genre;
-    private String description;
-    @NotNull private Duration duration;
+  @NotBlank private String title;
+  @NotNull private Set<Genre> genre;
+  private String description;
+  @NotNull private Duration duration;
 }

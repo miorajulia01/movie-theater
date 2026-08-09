@@ -6,11 +6,11 @@ import com.example.demo.entity.JRoom;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.RoomMapper;
 import com.example.demo.repository.JRoomRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -20,12 +20,14 @@ public class RoomService {
 
   public List<RoomResponse> findAll() {
     return roomRepository.findAll().stream()
-            .map(roomMapper::toResponse)
-            .collect(Collectors.toList());
+        .map(roomMapper::toResponse)
+        .collect(Collectors.toList());
   }
 
   public RoomResponse findById(UUID id) {
-    JRoom room = roomRepository.findById(id)
+    JRoom room =
+        roomRepository
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + id));
     return roomMapper.toResponse(room);
   }

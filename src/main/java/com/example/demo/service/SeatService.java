@@ -8,11 +8,11 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.SeatMapper;
 import com.example.demo.repository.JRoomRepository;
 import com.example.demo.repository.JSeatRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -23,18 +23,22 @@ public class SeatService {
 
   public List<SeatResponse> findAll() {
     return seatRepository.findAll().stream()
-            .map(seatMapper::toResponse)
-            .collect(Collectors.toList());
+        .map(seatMapper::toResponse)
+        .collect(Collectors.toList());
   }
 
   public SeatResponse findById(UUID id) {
-    JSeat seat = seatRepository.findById(id)
+    JSeat seat =
+        seatRepository
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Seat not found: " + id));
     return seatMapper.toResponse(seat);
   }
 
   public SeatResponse save(SeatRequest request) {
-    JRoom room = roomRepository.findById(request.getRoomId())
+    JRoom room =
+        roomRepository
+            .findById(request.getRoomId())
             .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
     JSeat seat = seatMapper.toEntity(request, room);
     JSeat saved = seatRepository.save(seat);
